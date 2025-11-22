@@ -1,6 +1,46 @@
 # API Reference
 
-This document provides detailed information about the Fullstack SAAS Template API endpoints.
+This document provides detailed information about the Fullstack SAAS Template API endpoints, integrated with Auth0 authentication and Razorpay payments.
+
+## 🔐 Authentication Overview
+
+This template uses **Auth0** for authentication and **JWT tokens** for API authorization.
+
+### Auth0 Integration Details
+- **Token Type**: JWT (JSON Web Tokens)
+- **Algorithm**: RS256 (RSA Signature)
+- **Issuer**: `https://your-tenant.auth0.com/`
+- **Audience**: Your API identifier (e.g., `https://api.yourapp.com`)
+
+**📖 Auth0 API Documentation**: [Auth0 Authentication API](https://auth0.com/docs/api/authentication)
+
+### JWT Token Structure
+```json
+{
+  "iss": "https://your-tenant.auth0.com/",
+  "sub": "auth0|123456789",
+  "aud": "https://api.yourapp.com",
+  "iat": 1640995200,
+  "exp": 1641081600,
+  "scope": "openid profile email",
+  "permissions": ["read:users", "create:users"]
+}
+```
+
+## 💳 Payment Overview
+
+This template uses **Razorpay** for payment processing and subscription management.
+
+### Razorpay Integration Details
+- **Supported Currencies**: INR (primary), USD, EUR, GBP
+- **Payment Methods**: Cards, UPI, Net Banking, Wallets
+- **Webhook Signature**: HMAC-SHA256
+- **Settlement**: T+1 for domestic payments
+
+**📖 Razorpay API Documentation**: [Razorpay Payment API](https://razorpay.com/docs/api/)
+
+### Supported Payment Flow
+1. **Order Creation** → 2. **Payment** → 3. **Verification** → 4. **Subscription Activation**
 
 ## Authentication Endpoints
 
@@ -212,6 +252,148 @@ The API allows requests from:
 5. **Backend** checks subscription tier for premium endpoints
 6. **Response** returned based on authentication and authorization
 
+## Auth0 Management APIs
+
+### User Management
+```javascript
+// Get user profile
+GET https://your-tenant.auth0.com/api/v2/users/{user_id}
+
+// Update user metadata
+PATCH https://your-tenant.auth0.com/api/v2/users/{user_id}
+{
+  "user_metadata": {
+    "subscription_tier": "pro",
+    "preferences": { "theme": "dark" }
+  }
+}
+
+// Get user roles
+GET https://your-tenant.auth0.com/api/v2/users/{user_id}/roles
+```
+
+### Application Management
+```javascript
+// Get application details
+GET https://your-tenant.auth0.com/api/v2/clients/{client_id}
+
+// Update application settings
+PATCH https://your-tenant.auth0.com/api/v2/clients/{client_id}
+{
+  "callbacks": ["https://yourdomain.com/callback"],
+  "allowed_origins": ["https://yourdomain.com"]
+}
+```
+
+**📖 Auth0 Management API**: [Auth0 Management API Reference](https://auth0.com/docs/api/management/v2)
+
+## Razorpay Payment APIs
+
+### Orders API
+```javascript
+// Create order
+POST https://api.razorpay.com/v1/orders
+{
+  "amount": 29900,
+  "currency": "INR",
+  "receipt": "order_rcptid_11",
+  "notes": {
+    "user_id": "user_123",
+    "plan_type": "pro_monthly"
+  }
+}
+
+// Fetch order
+GET https://api.razorpay.com/v1/orders/{order_id}
+```
+
+### Payments API
+```javascript
+// Fetch payment details
+GET https://api.razorpay.com/v1/payments/{payment_id}
+
+// Capture payment (for manual capture)
+POST https://api.razorpay.com/v1/payments/{payment_id}/capture
+{
+  "amount": 29900,
+  "currency": "INR"
+}
+
+// Create refund
+POST https://api.razorpay.com/v1/payments/{payment_id}/refund
+{
+  "amount": 5000,
+  "notes": {
+    "reason": "Customer request"
+  }
+}
+```
+
+### Subscriptions API
+```javascript
+// Create subscription
+POST https://api.razorpay.com/v1/subscriptions
+{
+  "plan_id": "plan_pro_monthly",
+  "customer_id": "cust_123",
+  "total_count": 12,
+  "start_at": 1640995200
+}
+
+// Cancel subscription
+POST https://api.razorpay.com/v1/subscriptions/{subscription_id}/cancel
+
+// Fetch subscription details
+GET https://api.razorpay.com/v1/subscriptions/{subscription_id}
+```
+
+**📖 Razorpay API Reference**: [Razorpay API Documentation](https://razorpay.com/docs/api/)
+
+## Webhook Specifications
+
+### Auth0 Webhooks
+Auth0 sends events to your configured webhook URLs:
+
+```json
+{
+  "type": "user.created",
+  "data": {
+    "user": {
+      "user_id": "auth0|123456",
+      "email": "user@example.com",
+      "name": "John Doe"
+    }
+  }
+}
+```
+
+### Razorpay Webhooks
+Razorpay sends payment events with HMAC signatures:
+
+```json
+{
+  "event": "payment.captured",
+  "data": {
+    "payment": {
+      "id": "pay_123456789",
+      "amount": 29900,
+      "currency": "INR",
+      "status": "captured",
+      "order_id": "order_123456789"
+    }
+  }
+}
+```
+
+**Webhook Signature Verification:**
+```javascript
+const crypto = require('crypto');
+const expectedSignature = crypto
+  .createHmac('sha256', webhookSecret)
+  .update(JSON.stringify(payload))
+  .digest('hex');
+```
+
 ## Testing
 
 Use the following test tokens for development:
@@ -223,4 +405,6 @@ Create test users in Auth0 Dashboard under "User Management" → "Users"
 Use test API keys and test cards:
 - Success: `4111 1111 1111 1111`
 - Failure: `4000 0000 0000 0002`
+- Insufficient funds: `4000 0000 0000 0002`
 - UPI Success: `success@razorpay`
+- UPI Failure: `failure@razorpay`

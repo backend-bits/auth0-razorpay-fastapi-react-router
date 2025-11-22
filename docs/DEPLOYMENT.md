@@ -241,33 +241,119 @@ This guide covers deploying the Fullstack SAAS Template to production environmen
    - Automatic with Vercel/Netlify
    - Manual configuration for other providers
 
+## Auth0 Production Management
+
+### Production Application Setup
+1. **Create Production Application**:
+   - Go to [Auth0 Dashboard](https://manage.auth0.com)
+   - Create new "Regular Web Application"
+   - Configure production domains and URLs
+
+2. **Production API Configuration**:
+   - Create production API with proper audience
+   - Set appropriate token expiration times
+   - Configure production permissions
+
+3. **Domain Configuration**:
+   - Use custom domain if available
+   - Configure SSL certificates
+   - Update DNS settings
+
+### Auth0 Security Best Practices
+- **Rotate Secrets**: Regularly rotate client secrets
+- **Monitor Logs**: Set up alerts for suspicious activities
+- **Configure MFA**: Enable Multi-Factor Authentication
+- **Rate Limiting**: Implement appropriate rate limits
+
+**📖 Official Auth0 Production Guide**: [Auth0 Production Checklist](https://auth0.com/docs/deploy/checklist)
+
+## Razorpay Production Management
+
+### Production Account Setup
+1. **Complete KYC Verification**:
+   - Submit all required documents
+   - Wait for approval (typically 1-2 business days)
+   - Enable live mode
+
+2. **Live API Keys**:
+   - Generate live key pair from dashboard
+   - Update environment variables
+   - Test thoroughly before going live
+
+3. **Production Webhooks**:
+   - Update webhook URLs to production domain
+   - Ensure HTTPS certificates are valid
+   - Test webhook delivery
+
+### Razorpay Compliance & Security
+- **PCI DSS Compliance**: Razorpay handles PCI compliance
+- **Data Encryption**: All payment data is encrypted
+- **Fraud Detection**: Enable Razorpay's fraud detection
+- **Chargeback Management**: Set up chargeback notification alerts
+
+**📖 Official Razorpay Production Guide**: [Razorpay Go Live Checklist](https://razorpay.com/docs/payment-gateway/go-live/)
+
+### Payment Method Configuration
+```javascript
+// Production payment options
+const options = {
+  key: 'rzp_live_your_key_id',
+  amount: 29900,
+  currency: 'INR',
+  name: 'Your SAAS App',
+  description: 'Pro Plan Subscription',
+  order_id: orderId,
+  handler: function (response) {
+    // Handle successful payment
+    verifyPayment(response);
+  },
+  prefill: {
+    name: customer.name,
+    email: customer.email,
+    contact: customer.phone
+  },
+  theme: {
+    color: '#3399cc'
+  }
+};
+```
+
 ## Environment Variables Summary
 
-### Backend (.env)
+### Backend (.env) - Production
 ```env
-# Auth0
-AUTH0_DOMAIN=your-tenant.auth0.com
+# Auth0 Production
+AUTH0_DOMAIN=your-prod-tenant.auth0.com
 AUTH0_API_AUDIENCE=https://api.yourdomain.com
-AUTH0_CLIENT_ID=your-client-id
-AUTH0_CLIENT_SECRET=your-client-secret
-SERVICE_TOKEN=your-secure-service-token
+AUTH0_CLIENT_ID=your-prod-client-id
+AUTH0_CLIENT_SECRET=your-prod-client-secret
+SERVICE_TOKEN=secure-random-prod-token
 
-# Razorpay
-RAZORPAY_KEY_ID=rzp_live_your_key_id
+# Razorpay Production
+RAZORPAY_KEY_ID=rzp_live_your_live_key_id
 RAZORPAY_KEY_SECRET=your_live_secret
 RAZORPAY_WEBHOOK_SECRET=your_live_webhook_secret
 
-# Database
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_KEY=your-service-key
+# Database Production
+SUPABASE_URL=https://your-prod-project.supabase.co
+SUPABASE_ANON_KEY=your-prod-anon-key
+SUPABASE_SERVICE_KEY=your-prod-service-key
 
-# Redis
-REDIS_URL=redis://username:password@host:port
+# Redis Production
+REDIS_URL=redis://username:password@your-redis-host:6379
 
 # App Settings
 FRONTEND_URL=https://yourdomain.com
-SERVICE_TOKEN=secure-random-token
+ENVIRONMENT=production
+```
+
+### Frontend (.env.production) - Production
+```env
+VITE_AUTH0_DOMAIN=your-prod-tenant.auth0.com
+VITE_AUTH0_CLIENT_ID=your-prod-client-id
+VITE_AUTH0_AUDIENCE=https://api.yourdomain.com
+VITE_API_BASE_URL=https://api.yourdomain.com
+VITE_ENVIRONMENT=production
 ```
 
 ### Frontend (.env.local)

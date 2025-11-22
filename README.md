@@ -68,19 +68,64 @@ cd frontend
 npm install
 ```
 
-### 3. Configure Environment Variables
+### 3. Set Up Auth0 Account & Application
+Follow the detailed Auth0 setup guide: [Auth0 Setup Guide](docs/MODIFICATION_GUIDE.md#auth0-setup)
+
+**Quick Auth0 Setup Steps:**
+1. **Create Account**: Go to [auth0.com](https://auth0.com) and sign up
+2. **Create Application**:
+   - Choose "Regular Web Application"
+   - Set callback URLs: `http://localhost:5173` (dev), your production domain
+   - Note: Domain, Client ID, Client Secret
+3. **Create API**:
+   - Identifier: `https://api.yourapp.com`
+   - Signing Algorithm: RS256
+4. **Configure Permissions**: Add `read:users`, `create:users`, etc.
+5. **Optional - Auth0 Actions**: Set up login/logout tracking
+
+**📖 Official Auth0 Documentation**: [Auth0 Docs](https://auth0.com/docs?tenant=dev-kosuthubha%40prod-us-5&locale=en-us)
+- [Quick Start Guide](https://auth0.com/docs/quickstarts)
+- [API Authorization](https://auth0.com/docs/get-started/apis)
+- [Auth0 Actions](https://auth0.com/docs/actions)
+- [JWT Verification](https://auth0.com/docs/secure/tokens/json-web-tokens)
+
+### 4. Set Up Razorpay Account & Integration
+Follow the detailed Razorpay setup guide: [Razorpay Setup Guide](docs/MODIFICATION_GUIDE.md#razorpay-setup)
+
+**Quick Razorpay Setup Steps:**
+1. **Create Account**: Go to [razorpay.com](https://razorpay.com) and sign up
+2. **Complete KYC**: Skip for test mode, required for live mode
+3. **Generate API Keys**:
+   - Start with **Test Mode** for development
+   - Note: Key ID (`rzp_test_xxx`) and Key Secret
+4. **Set Up Webhooks**:
+   - URL: `https://yourdomain.com/webhooks/razorpay`
+   - Events: `subscription.activated`, `subscription.charged`, `payment.captured`
+5. **Create Plans**: Set up subscription plans in Razorpay dashboard
+
+**📖 Official Razorpay Documentation**: [Razorpay Docs](https://razorpay.com/docs/)
+- [Payment Gateway Integration](https://razorpay.com/docs/payment-gateway)
+- [Subscriptions API](https://razorpay.com/docs/subscriptions)
+- [Webhooks Guide](https://razorpay.com/docs/webhooks)
+- [Test Mode Guide](https://razorpay.com/docs/payments/test-mode)
+
+**Test Credentials for Development:**
+- **Test Cards**: `4111 1111 1111 1111` (success), `4000 0000 0000 0002` (failure)
+- **Test UPI**: `success@razorpay` (success), `failure@razorpay` (failure)
+
+### 5. Configure Environment Variables
 Copy the environment files and update with your credentials:
 
 **Backend (.env):**
 ```env
-# Auth0 Configuration
+# Auth0 Configuration (from Auth0 Dashboard)
 AUTH0_DOMAIN=your-tenant.auth0.com
 AUTH0_API_AUDIENCE=https://api.yourapp.com
 AUTH0_CLIENT_ID=your-client-id
 AUTH0_CLIENT_SECRET=your-client-secret
-SERVICE_TOKEN=your-service-token
+SERVICE_TOKEN=your-secure-service-token
 
-# Razorpay Configuration
+# Razorpay Configuration (from Razorpay Dashboard)
 RAZORPAY_KEY_ID=rzp_test_your_key_id
 RAZORPAY_KEY_SECRET=your_key_secret
 RAZORPAY_WEBHOOK_SECRET=your_webhook_secret
@@ -98,11 +143,6 @@ VITE_AUTH0_CLIENT_ID=your-client-id
 VITE_AUTH0_AUDIENCE=https://api.yourapp.com
 VITE_API_BASE_URL=http://localhost:8000
 ```
-
-### 4. Setup Auth0 & Razorpay
-Follow the detailed setup guides:
-- [Auth0 Setup Guide](docs/MODIFICATION_GUIDE.md#auth0-setup)
-- [Razorpay Setup Guide](docs/MODIFICATION_GUIDE.md#razorpay-setup)
 
 ### 5. Run the Application
 ```bash
