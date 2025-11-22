@@ -1,0 +1,8 @@
+fastapi[all]
+pydantic
+uvicorn[standard]
+razorpay
+python-jose[cryptography]==3.3.0
+httpx
+redis[async]
+supabase
